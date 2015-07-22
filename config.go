@@ -54,17 +54,16 @@ func findConfigFile() (string, error) {
 	return "", errors.New("Could not find config file.")
 }
 
-func getConfig() (*config, error) {
+func newConfig(filename string) (*config, error) {
 	c := new(config)
-	configFile, err := findConfigFile()
 	if err != nil {
-		data, err := ioutil.ReadFile(configFile)
+		data, err := ioutil.ReadFile(filename)
 		if err != nil {
-			err = fmt.Errorf("Could not open yaml config file \"%s\": %s", configFile, err)
+			err = fmt.Errorf("Could not open yaml config file \"%s\": %s", filename, err)
 		}
 		err = yaml.Unmarshal(data, c)
 		if err != nil {
-			err = fmt.Errorf("Could not process yaml config file \"%s\": %s", configFile, err)
+			err = fmt.Errorf("Could not process yaml config file \"%s\": %s", filename, err)
 		}
 	}
 	return c, err
