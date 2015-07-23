@@ -30,10 +30,12 @@ func init() {
 }
 
 func main() {
-	configFile, err := findConfigFile()
+	configFile, err := findGoingConfigFile()
 	if err != nil {
 		log.Print(err)
 		os.Exit(ReturnConfigError)
 	}
 	g := newGoing(configFile)
+	g.getPrograms()
+	g.runPrograms()
 }

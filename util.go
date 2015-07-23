@@ -17,6 +17,6 @@ func fileExists(filename string) bool {
 // programName gets the program name from the filename base without extension
 func programName(filename string) string {
 	filename = path.Base(filename)
-	ext = path.Ext(filename)
+	ext := path.Ext(filename)
 	return filename[:len(filename)-len(ext)]
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ioutil"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -11,7 +11,7 @@ import (
 
 // main app struct
 type going struct {
-	config *config
+	config *goingConfig
 	logger *log.Logger
 	// key = yaml base filename without extension
 	programs map[string]*program
@@ -44,13 +44,15 @@ func (g *going) getPrograms() {
 
 	for _, file := range programs {
 		p = new(program)
+		p.config = new(programConfig)
+		p.state = StateNil
 		data, err := ioutil.ReadFile(file)
 		if err != nil {
-			// TODO log this
+			g.logger.Printf("Could not read program config file %s. Skipping.", file)
 			continue
 		}
-		err = yaml.Unmarshal(data, p)
-		key := p.Name
+		err = yaml.Unmarshal(data, p.config)
+		key := p.config.Name
 		if key == "" {
 			key = programName(file)
 		}
@@ -59,10 +61,10 @@ func (g *going) getPrograms() {
 }
 
 func (g *going) scanProgramConfigDir() ([]string, error) {
-	programs := new([]string)
+	programs := []string{}
 	dir := g.config.ProgramConfigDir
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
+		if !info.IsDir() && filepath.Ext(path) == ".conf" {
 			programs = append(programs, path)
 		}
 		return nil
@@ -72,11 +74,24 @@ func (g *going) scanProgramConfigDir() ([]string, error) {
 
 func (g *going) loadLogger() {
 	var file *os.File
-	logFile := filepath.Join(g.config.Log.Path, "going.log")
+	logFile := filepath.Join(g.config.Log.Dir, "going.log")
 	if fileExists(logFile) {
-		file, _ = os.OpenFile(logFile, O_APPEND, os.ModeAppend)
+		file, _ = os.OpenFile(logFile, os.O_APPEND, os.ModeAppend)
 	} else {
 		file, _ = os.Create(logFile)
 	}
-	g.logger = log.New(file, "", os.LstdFlags)
+	g.logger = log.New(file, "", log.LstdFlags)
+}
+
+func (g *going) runPrograms() {
+	for name, program := range g.programs {
+		g.logger.Printf("Initializing program %s", name)
+		err := program.init()
+		if err != nil {
+			g.logger.Printf("Could not initializing program %s. Error: %s", name, err)
+			continue
+		}
+		g.logger.Printf("Running program %s", name)
+		go program.run()
+	}
 }

@@ -3,7 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
-	"ioutil"
+	"io/ioutil"
+	"os"
 	"path"
 
 	"gopkg.in/yaml.v2"
@@ -26,39 +27,37 @@ type goingConfig struct {
 // /etc/going.conf
 func findGoingConfigFile() (string, error) {
 	if isValidFile(*flagConfigFile) {
-		return *flagConfig
+		return *flagConfigFile, nil
 	}
 
 	envVar := os.Getenv(EnvVarConfigFile)
 	if isValidFile(envVar) {
-		return envVar
+		return envVar, nil
 	}
 
 	home := os.Getenv("HOME")
 	homeConfig := path.Join(home, ".going.conf")
 	if isValidFile(homeConfig) {
-		return homeConfig
+		return homeConfig, nil
 	}
 
 	etcConfig := "/etc/going.conf"
 	if isValidFile(etcConfig) {
-		return etcConfig
+		return etcConfig, nil
 	}
 
 	return "", errors.New("Could not find config file.")
 }
 
 func newConfig(filename string) (*goingConfig, error) {
-	c := new(config)
+	c := new(goingConfig)
+	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		data, err := ioutil.ReadFile(filename)
-		if err != nil {
-			err = fmt.Errorf("Could not open config file \"%s\": %s", filename, err)
-		}
-		err = yaml.Unmarshal(data, c)
-		if err != nil {
-			err = fmt.Errorf("Could not process config file as yaml data: \"%s\", %s", filename, err)
-		}
+		err = fmt.Errorf("Could not open config file \"%s\": %s", filename, err)
+	}
+	err = yaml.Unmarshal(data, c)
+	if err != nil {
+		err = fmt.Errorf("Could not process config file as yaml data: \"%s\", %s", filename, err)
 	}
 	return c, err
 }
