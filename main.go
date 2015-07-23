@@ -36,6 +36,6 @@ func main() {
 		os.Exit(ReturnConfigError)
 	}
 	g := newGoing(configFile)
-	g.getPrograms()
 	g.runPrograms()
+	g.listen()
 }

@@ -91,3 +91,13 @@ func (p *program) loadLogger() error {
 	p.logger = log.New(file, "", log.LstdFlags)
 	return nil
 }
+
+func newProgramConfig(filename string) (*programConfig, error) {
+	c := new(programConfig)
+	err := loadYaml(filename, c)
+
+	if err != nil {
+		err = fmt.Errorf("Could not load program config file \"%s\": %s", filename, err)
+	}
+	return c, err
+}

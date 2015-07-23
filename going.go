@@ -1,12 +1,10 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-
-	"gopkg.in/yaml.v2"
+	"time"
 )
 
 // main app struct
@@ -19,12 +17,13 @@ type going struct {
 
 // wish it was named getGoing, but consistency trumps all
 func newGoing(configFile string) *going {
-	c, err := newConfig(configFile)
+	c, err := newGoingConfig(configFile)
 	if err != nil {
 		log.Print(err)
 		os.Exit(ReturnConfigError)
 	}
 	g := new(going)
+	g.programs = make(map[string]*program)
 	g.config = c
 	g.loadLogger()
 	g.getPrograms()
@@ -44,14 +43,12 @@ func (g *going) getPrograms() {
 
 	for _, file := range programs {
 		p = new(program)
-		p.config = new(programConfig)
 		p.state = StateNil
-		data, err := ioutil.ReadFile(file)
+		p.config, err = newProgramConfig(file)
 		if err != nil {
 			g.logger.Printf("Could not read program config file %s. Skipping.", file)
 			continue
 		}
-		err = yaml.Unmarshal(data, p.config)
 		key := p.config.Name
 		if key == "" {
 			key = programName(file)
@@ -65,6 +62,7 @@ func (g *going) scanProgramConfigDir() ([]string, error) {
 	dir := g.config.ProgramConfigDir
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() && filepath.Ext(path) == ".conf" {
+			g.logger.Printf("Loading program conf file %s.", path)
 			programs = append(programs, path)
 		}
 		return nil
@@ -76,7 +74,7 @@ func (g *going) loadLogger() {
 	var file *os.File
 	logFile := filepath.Join(g.config.Log.Dir, "going.log")
 	if fileExists(logFile) {
-		file, _ = os.OpenFile(logFile, os.O_APPEND, os.ModeAppend)
+		file, _ = os.OpenFile(logFile, os.O_WRONLY, 0644)
 	} else {
 		file, _ = os.Create(logFile)
 	}
@@ -84,14 +82,32 @@ func (g *going) loadLogger() {
 }
 
 func (g *going) runPrograms() {
-	for name, program := range g.programs {
-		g.logger.Printf("Initializing program %s", name)
-		err := program.init()
-		if err != nil {
-			g.logger.Printf("Could not initializing program %s. Error: %s", name, err)
-			continue
-		}
-		g.logger.Printf("Running program %s", name)
-		go program.run()
+	for _, program := range g.programs {
+		go g.runProgram(program)
+	}
+}
+
+func (g *going) runProgram(p *program) {
+	name := p.config.Name
+	g.logger.Printf("Initializing program %s", name)
+	err := p.init()
+	if err != nil {
+		g.logger.Printf("Could not initializing program %s. Error: %s", name, err)
+	}
+	g.logger.Printf("Running program %s", name)
+	// proc := p.cmd.Process
+	//state := p.cmd.ProcessState
+	err = p.cmd.Run()
+	if err != nil {
+		g.logger.Printf("Could not run program %s. Error: %s", name, err)
+	}
+	for {
+		time.Sleep(500 * time.Millisecond)
+	}
+}
+
+func (g *going) listen() {
+	for {
+		time.Sleep(500 * time.Millisecond)
 	}
 }

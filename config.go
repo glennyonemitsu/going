@@ -2,18 +2,13 @@ package main
 
 import (
 	"errors"
-	"fmt"
-	"io/ioutil"
 	"os"
-	"path"
-
-	"gopkg.in/yaml.v2"
+	"path/filepath"
 )
 
 type goingConfig struct {
 	Log              logConfig
 	PidFile          string
-	PollInterval     int
 	ProgramConfigDir string
 	SocketPath       string
 	Umask            int
@@ -36,12 +31,12 @@ func findGoingConfigFile() (string, error) {
 	}
 
 	home := os.Getenv("HOME")
-	homeConfig := path.Join(home, ".going.conf")
+	homeConfig := filepath.Join(home, ".going", "going.conf")
 	if isValidFile(homeConfig) {
 		return homeConfig, nil
 	}
 
-	etcConfig := "/etc/going.conf"
+	etcConfig := "/etc/going/going.conf"
 	if isValidFile(etcConfig) {
 		return etcConfig, nil
 	}
@@ -49,15 +44,24 @@ func findGoingConfigFile() (string, error) {
 	return "", errors.New("Could not find config file.")
 }
 
-func newConfig(filename string) (*goingConfig, error) {
+func newGoingConfig(filename string) (*goingConfig, error) {
 	c := new(goingConfig)
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		err = fmt.Errorf("Could not open config file \"%s\": %s", filename, err)
+	err := loadYaml(filename, c)
+
+	configDir := filepath.Dir(filename)
+
+	// set defaults
+	if c.PidFile == "" {
+		c.PidFile = filepath.Join(configDir, "going.pid")
 	}
-	err = yaml.Unmarshal(data, c)
-	if err != nil {
-		err = fmt.Errorf("Could not process config file as yaml data: \"%s\", %s", filename, err)
+
+	if c.ProgramConfigDir == "" {
+		c.ProgramConfigDir = filepath.Join(configDir, "programs")
 	}
+
+	if c.Log.Dir == "" {
+		c.Log.Dir = filepath.Join(configDir, "logs")
+	}
+
 	return c, err
 }
