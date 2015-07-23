@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type config struct {
+type goingConfig struct {
 	Log              logConfig
 	PidFile          string
 	PollInterval     int
@@ -19,34 +19,28 @@ type config struct {
 	Username         string
 }
 
-type logConfig struct {
-	Interval string
-	Limit    int
-	Dir      string
-}
-
 // Search order for config file in this order:
 // global variable flagConfigFile
-// environment variable named in const ENV_VAR_CONFIG_FILE
+// environment variable named in const EnvVarConfigFile
 // $HOME/.going.conf,
 // /etc/going.conf
-func findConfigFile() (string, error) {
+func findGoingConfigFile() (string, error) {
 	if isValidFile(*flagConfigFile) {
 		return *flagConfig
 	}
 
-	envVar := os.Getenv(ENV_VAR_CONFIG_FILE)
+	envVar := os.Getenv(EnvVarConfigFile)
 	if isValidFile(envVar) {
 		return envVar
 	}
 
 	home := os.Getenv("HOME")
-	homeConfig := path.Join(home, ".going.yaml")
+	homeConfig := path.Join(home, ".going.conf")
 	if isValidFile(homeConfig) {
 		return homeConfig
 	}
 
-	etcConfig := "/etc/going.yaml"
+	etcConfig := "/etc/going.conf"
 	if isValidFile(etcConfig) {
 		return etcConfig
 	}
@@ -54,16 +48,16 @@ func findConfigFile() (string, error) {
 	return "", errors.New("Could not find config file.")
 }
 
-func newConfig(filename string) (*config, error) {
+func newConfig(filename string) (*goingConfig, error) {
 	c := new(config)
 	if err != nil {
 		data, err := ioutil.ReadFile(filename)
 		if err != nil {
-			err = fmt.Errorf("Could not open yaml config file \"%s\": %s", filename, err)
+			err = fmt.Errorf("Could not open config file \"%s\": %s", filename, err)
 		}
 		err = yaml.Unmarshal(data, c)
 		if err != nil {
-			err = fmt.Errorf("Could not process yaml config file \"%s\": %s", filename, err)
+			err = fmt.Errorf("Could not process config file as yaml data: \"%s\", %s", filename, err)
 		}
 	}
 	return c, err

@@ -21,8 +21,8 @@ type going struct {
 func newGoing(configFile string) *going {
 	c, err := newConfig(configFile)
 	if err != nil {
-		log.Fatal(err)
-		os.Exit(RETURN_CONFIG_ERROR)
+		log.Print(err)
+		os.Exit(ReturnConfigError)
 	}
 	g := new(going)
 	g.config = c
@@ -38,7 +38,8 @@ func (g *going) getPrograms() {
 
 	programs, err = g.scanProgramConfigDir()
 	if err != nil {
-		// TODO log
+		g.logger.Printf("Could not scan program config files in %s.", g.config.ProgramConfigDir)
+		os.Exit(ReturnProgramScanError)
 	}
 
 	for _, file := range programs {

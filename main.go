@@ -7,12 +7,20 @@ import (
 )
 
 const (
-	ENV_VAR_CONFIG_FILE string = "GOING_CONFIG_FILE"
+	EnvVarConfigFile string = "GOING_CONFIG_FILE"
 )
 
 const (
-	RETURN_CONFIG_ERROR int = iota
+	_ = iota
+	ReturnConfigError
+	ReturnProgramScanError
 )
+
+type logConfig struct {
+	Interval string
+	Limit    int
+	Dir      string
+}
 
 var flagConfigFile *string
 
@@ -24,8 +32,8 @@ func init() {
 func main() {
 	configFile, err := findConfigFile()
 	if err != nil {
-		log.Fatal(err)
-		os.Exit(RETURN_CONFIG_ERROR)
+		log.Print(err)
+		os.Exit(ReturnConfigError)
 	}
 	g := newGoing(configFile)
 }
