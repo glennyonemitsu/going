@@ -1,9 +1,10 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -24,18 +25,26 @@ type logConfig struct {
 
 var flagConfigFile *string
 
-func init() {
-	flagConfigFile = flag.String("config", "", "Config file")
-	flag.Parse()
-}
-
 func main() {
-	configFile, err := findGoingConfigFile()
-	if err != nil {
-		log.Print(err)
-		os.Exit(ReturnConfigError)
+	cmdRoot := &cobra.Command{Use: "going"}
+
+	cmdRun := &cobra.Command{
+		Use:   "run",
+		Short: "Run the server to watch processes",
+		Run: func(cmd *cobra.Command, args []string) {
+			configFile, err := findGoingConfigFile()
+			if err != nil {
+				log.Print(err)
+				os.Exit(ReturnConfigError)
+			}
+
+			g := newGoing(configFile)
+			g.runPrograms()
+			g.listen()
+		},
 	}
-	g := newGoing(configFile)
-	g.runPrograms()
-	g.listen()
+	flagConfigFile = cmdRun.Flags().StringP("config", "c", "", "Config file to use")
+
+	cmdRoot.AddCommand(cmdRun)
+	cmdRoot.Execute()
 }
