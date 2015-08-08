@@ -10,19 +10,19 @@ import (
 
 // main app struct
 type going struct {
-	config *goingConfig
+	config *GoingConfig
 	logger *log.Logger
 	// key = yaml base filename without extension
 	programs map[string]*Program
 }
 
-type goingConfig struct {
-	Log              logConfig
-	PidFile          string
-	ProgramConfigDir string
-	SocketPath       string
-	Umask            int
-	Username         string
+type GoingConfig struct {
+	Log              logConfig `cdoc:"log configuration"`
+	PidFile          string    `cdoc:"location of going's pid file, defaults to directory of the loaded config file"`
+	ProgramConfigDir string    `cdoc:"location of the program conf files"`
+	SocketPath       string    `cdoc:"location of the socket file"`
+	Umask            int       `cdoc:"default umask for all running programs"`
+	Username         string    `cdoc:"default username to run programs as"`
 }
 
 // wish it was named getGoing, but consistency trumps all
@@ -151,8 +151,8 @@ func findGoingConfigFile() (string, error) {
 	return "", errors.New("Could not find config file.")
 }
 
-func newGoingConfig(filename string) (*goingConfig, error) {
-	c := new(goingConfig)
+func newGoingConfig(filename string) (*GoingConfig, error) {
+	c := new(GoingConfig)
 	err := loadYaml(filename, c)
 
 	configDir := filepath.Dir(filename)
