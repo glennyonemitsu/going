@@ -28,8 +28,7 @@ type Program struct {
 
 // ProgramConfig holds all the parameters for going to run and maintain the
 // state of the supervised process. These variables are all configurable via
-// the program's yaml format config file, except for non primitive types such
-// as ProgramConfig.Log.
+// the program's yaml format config file.
 type ProgramConfig struct {
 	Command     string
 	Environment map[string]string
