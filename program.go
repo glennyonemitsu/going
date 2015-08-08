@@ -16,8 +16,8 @@ const (
 	StateRunning
 )
 
-type program struct {
-	config *programConfig
+type Program struct {
+	config *ProgramConfig
 	// internal program logger to capture all program output
 	logger *log.Logger
 	// actual user struct data based on Username lookup
@@ -26,10 +26,15 @@ type program struct {
 	cmd   *exec.Cmd
 }
 
-type programConfig struct {
+// ProgramConfig holds all the parameters for going to run and maintain the
+// state of the supervised process. These variables are all configurable via
+// the program's yaml format config file, except for non primitive types such
+// as ProgramConfig.Log.
+type ProgramConfig struct {
 	Command     string
 	Environment map[string]string
 	Log         logConfig
+	// internal identifier
 	Name        string
 	ProcessName string
 	StopSignal  syscall.Signal
@@ -40,7 +45,7 @@ type programConfig struct {
 // init sets up other data and structs and performs checks to make sure
 // everything is available to properly run. The logger param is sent by the
 // parent going struct.
-func (p *program) init() error {
+func (p *Program) init() error {
 	var err error
 
 	p.user, err = user.Lookup(p.config.Username)
@@ -71,12 +76,12 @@ func (p *program) init() error {
 	return err
 }
 
-func (p *program) run() {
+func (p *Program) run() {
 	p.cmd.Run()
 
 }
 
-func (p *program) loadLogger() error {
+func (p *Program) loadLogger() error {
 	var file *os.File
 	var err error
 	logFile := filepath.Join(p.config.Log.Dir, p.config.Name+".log")
@@ -92,8 +97,8 @@ func (p *program) loadLogger() error {
 	return nil
 }
 
-func newProgramConfig(filename string) (*programConfig, error) {
-	c := new(programConfig)
+func newProgramConfig(filename string) (*ProgramConfig, error) {
+	c := new(ProgramConfig)
 	err := loadYaml(filename, c)
 
 	if err != nil {

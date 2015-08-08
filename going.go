@@ -12,7 +12,7 @@ type going struct {
 	config *goingConfig
 	logger *log.Logger
 	// key = yaml base filename without extension
-	programs map[string]*program
+	programs map[string]*Program
 }
 
 // wish it was named getGoing, but consistency trumps all
@@ -23,7 +23,7 @@ func newGoing(configFile string) *going {
 		os.Exit(ReturnConfigError)
 	}
 	g := new(going)
-	g.programs = make(map[string]*program)
+	g.programs = make(map[string]*Program)
 	g.config = c
 	g.loadLogger()
 	g.getPrograms()
@@ -31,7 +31,7 @@ func newGoing(configFile string) *going {
 }
 
 func (g *going) getPrograms() {
-	var p *program
+	var p *Program
 	var programs []string
 	var err error
 
@@ -42,7 +42,7 @@ func (g *going) getPrograms() {
 	}
 
 	for _, file := range programs {
-		p = new(program)
+		p = new(Program)
 		p.state = StateNil
 		p.config, err = newProgramConfig(file)
 		if err != nil {
@@ -87,7 +87,7 @@ func (g *going) runPrograms() {
 	}
 }
 
-func (g *going) runProgram(p *program) {
+func (g *going) runProgram(p *Program) {
 	name := p.config.Name
 	g.logger.Printf("Initializing program %s", name)
 	err := p.init()
