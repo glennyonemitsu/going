@@ -1,6 +1,6 @@
 package main
 
-const ExampleConfigGoing string = `
+var ExampleConfigGoing string = `
 # This is the example config file with all configuration parameters for the 
 # main going server.
 
