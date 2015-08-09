@@ -32,7 +32,6 @@ func newGoing(configFile string) *going {
 	g := new(going)
 	g.programs = make(map[string]*Program)
 	g.config = c
-	g.loadLogger()
 	g.getPrograms()
 	return g
 }
@@ -75,17 +74,6 @@ func (g *going) scanProgramConfigDir() ([]string, error) {
 		return nil
 	})
 	return programs, err
-}
-
-func (g *going) loadLogger() {
-	var file *os.File
-	logFile := filepath.Join(g.config.Log.Dir, "going.log")
-	if fileExists(logFile) {
-		file, _ = os.OpenFile(logFile, os.O_WRONLY, 0644)
-	} else {
-		file, _ = os.Create(logFile)
-	}
-	g.logger = log.New(file, "", log.LstdFlags)
 }
 
 func (g *going) runPrograms() {
@@ -161,10 +149,6 @@ func newGoingConfig(filename string) (*GoingConfig, error) {
 
 	if c.ProgramConfigDir == "" {
 		c.ProgramConfigDir = filepath.Join(configDir, "programs")
-	}
-
-	if c.Log.Dir == "" {
-		c.Log.Dir = filepath.Join(configDir, "logs")
 	}
 
 	return c, err

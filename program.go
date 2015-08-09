@@ -2,11 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"os/exec"
-	"os/user"
-	"path/filepath"
 	"syscall"
 )
 
@@ -18,12 +14,8 @@ const (
 
 type Program struct {
 	config *ProgramConfig
-	// internal program logger to capture all program output
-	logger *log.Logger
-	// actual user struct data based on Username lookup
-	user  *user.User
-	state int
-	cmd   *exec.Cmd
+	state  int
+	cmd    *exec.Cmd
 }
 
 // ProgramConfig holds all the parameters for going to run and maintain the
@@ -43,23 +35,6 @@ type ProgramConfig struct {
 func (p *Program) init() error {
 	var err error
 
-	p.user, err = user.Lookup(p.config.Username)
-	if err != nil {
-		return fmt.Errorf(
-			"Could not lookup username \"%s\" for program \"%s\".",
-			p.config.Username,
-			p.config.Name,
-		)
-	}
-
-	err = p.loadLogger()
-	if err != nil {
-		return fmt.Errorf(
-			"Could not load logger for program \"%s\".",
-			p.config.Name,
-		)
-	}
-
 	p.cmd = exec.Command(p.config.Command)
 	p.cmd.Dir = p.config.Dir
 	for key, value := range p.config.Environment {
@@ -74,22 +49,6 @@ func (p *Program) init() error {
 func (p *Program) run() {
 	p.cmd.Run()
 
-}
-
-func (p *Program) loadLogger() error {
-	var file *os.File
-	var err error
-	logFile := filepath.Join(p.config.Log.Dir, p.config.Name+".log")
-	if fileExists(logFile) {
-		file, err = os.OpenFile(logFile, os.O_APPEND, os.ModeAppend)
-	} else {
-		file, err = os.Create(logFile)
-	}
-	if err != nil {
-		return err
-	}
-	p.logger = log.New(file, "", log.LstdFlags)
-	return nil
 }
 
 func newProgramConfig(filename string) (*ProgramConfig, error) {
