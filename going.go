@@ -67,7 +67,7 @@ func (g *going) scanProgramConfigDir() ([]string, error) {
 	programs := []string{}
 	dir := g.config.ProgramConfigDir
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() && filepath.Ext(path) == ".conf" {
+		if !info.IsDir() && filepath.Ext(path) == ".yaml" {
 			g.logger.Printf("Loading program conf file %s.", path)
 			programs = append(programs, path)
 		}
