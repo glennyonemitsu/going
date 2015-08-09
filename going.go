@@ -122,7 +122,7 @@ func (g *going) listen() {
 // Search order for config file in this order:
 // global variable flagConfigFile, aka command line -config flag
 // environment variable named in const EnvVarConfigFile
-// $HOME/.going.conf,
+// $HOME/.going/going.yaml,
 // /etc/going.conf
 func findGoingConfigFile() (string, error) {
 	if isValidFile(*flagConfigFile) {
@@ -135,12 +135,12 @@ func findGoingConfigFile() (string, error) {
 	}
 
 	home := os.Getenv("HOME")
-	homeConfig := filepath.Join(home, ".going", "going.conf")
+	homeConfig := filepath.Join(home, ".going", "going.yaml")
 	if isValidFile(homeConfig) {
 		return homeConfig, nil
 	}
 
-	etcConfig := "/etc/going/going.conf"
+	etcConfig := "/etc/going/going.yaml"
 	if isValidFile(etcConfig) {
 		return etcConfig, nil
 	}
