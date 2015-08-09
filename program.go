@@ -31,13 +31,9 @@ type Program struct {
 // the program's yaml format config file.
 type ProgramConfig struct {
 	Command     string
-	Environment map[string]string
-	Log         logConfig
-	// internal identifier
 	Name        string
-	ProcessName string
+	Environment map[string]string
 	StopSignal  syscall.Signal
-	Username    string
 	Dir         string
 }
 

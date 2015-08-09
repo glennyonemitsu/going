@@ -17,12 +17,9 @@ type going struct {
 }
 
 type GoingConfig struct {
-	Log              logConfig `cdoc:"log configuration"`
-	PidFile          string    `cdoc:"location of going's pid file, defaults to directory of the loaded config file"`
-	ProgramConfigDir string    `cdoc:"location of the program conf files"`
-	SocketPath       string    `cdoc:"location of the socket file"`
-	Umask            int       `cdoc:"default umask for all running programs"`
-	Username         string    `cdoc:"default username to run programs as"`
+	PidFile          string
+	ProgramConfigDir string
+	SocketPath       string
 }
 
 // wish it was named getGoing, but consistency trumps all

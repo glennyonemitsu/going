@@ -40,24 +40,3 @@ func loadYaml(filename string, target interface{}) error {
 	}
 	return nil
 }
-
-// exampleConf dumps the exported fields of config structs to directly use in
-// yaml files.
-func exampleConf(s reflect.Type, prefix string) string {
-	output := ""
-	for i := 0; i < s.NumField(); i += 1 {
-		field := s.Field(i)
-		output += fmt.Sprintf(
-			"%s %s\n%s %s:\n%s\n",
-			prefix,
-			field.Tag.Get("cdoc"),
-			prefix,
-			field.Name,
-			prefix,
-		)
-		if field.Type.Kind() == reflect.Struct {
-			output += exampleConf(field.Type, prefix+"    ")
-		}
-	}
-	return output
-}

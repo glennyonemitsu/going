@@ -49,21 +49,19 @@ func main() {
 	cmdExampleConfig := &cobra.Command{
 		Use:   "example-config",
 		Short: "Dump example config files to standard out",
-		Run: func(cmd *cobra.Command, args []string) {
-		},
 	}
 	cmdExampleConfigGoing := &cobra.Command{
 		Use:   "going",
 		Short: "Dump example config file for main going server",
 		Run: func(cmd *cobra.Command, args []string) {
-			println(exampleConf(reflect.TypeOf(GoingConfig{}), "# "))
+			println(ExampleConfigGoing)
 		},
 	}
 	cmdExampleConfigProgram := &cobra.Command{
 		Use:   "program",
 		Short: "Dump example config file for programs running under the going server",
 		Run: func(cmd *cobra.Command, args []string) {
-			println(exampleConf(reflect.TypeOf(ProgramConfig{}), "# "))
+			println(ExampleConfigProgram)
 		},
 	}
 
